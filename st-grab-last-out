@@ -9,7 +9,10 @@ trap 'rm "$tmpfile"' 0 1 15
 trap 'rm "$tmpfile2"' 0 1 15
 sed -n "w $tmpfile"
 ps1="$(grep "\S" "$tmpfile" | tail -n 1 | cut -d' ' -f1)"
-chosen="$(grep -F "$ps1" "$tmpfile" | sed '$ d' | tail -n 1 | sed 's/[^^]/[&]/g; s/\^/\\^/g')"
 eps1="$(echo "$ps1" | sed 's/[^^]/[&]/g; s/\^/\\^/g')"
-awk "/^$chosen$/{p=1;print;next} p&&/^$eps1/{p=0};p" "$tmpfile" >> $tmpfile2
+sed -i '$ d' "$tmpfile"
+awk "/^$eps1/{t=1;p=1}
+	t{a[p]=\$0; p=p+1}
+	END{for (i=1; i<p; ++i) print a[i];}" "$tmpfile" >> $tmpfile2
+# awk "/^$chosen$/{p=1;print;next} p&&/^$eps1/{p=0};p" "$tmpfile" >> $tmpfile2
 st -e "$EDITOR" "$tmpfile2"
